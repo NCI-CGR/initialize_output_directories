@@ -9,6 +9,7 @@
 #include <stdexcept>
 
 #include "initialize_output_directories/cargs.h"
+#include "initialize_output_directories/yaml_reader.h"
 
 int main(int argc, char **argv) {
   // parse command line input
