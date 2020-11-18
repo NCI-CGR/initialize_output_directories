@@ -8,5 +8,7 @@
 #include "initialize_output_directories/cargs.h"
 
 void initialize_output_directories::cargs::initialize_options() {
-  _desc.add_options()("help,h", "emit this help message");
+  _desc.add_options()("help,h", "emit this help message")(
+      "config,c", boost::program_options::value<std::string>(),
+      "configuration file, yaml format");
 }
