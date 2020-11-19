@@ -64,6 +64,40 @@ class cargs {
   bool help() const { return compute_flag("help"); }
 
   /*!
+    \brief get the user-specified phenotype configuration file
+    \return the user-specified phenotype configuration file
+
+    This file should be in yaml format and specify each of the
+    phenotype run configuration options required for the analysis.
+    Yaml format is checked by yaml-cpp but any config file extension
+    is allowed.
+   */
+  std::string get_phenotype_config() const {
+    return compute_parameter<std::string>("phenotype-config");
+  }
+
+  /*!
+    \brief get the user-specified extension configuration file
+    \return the user-specified extension configuration file
+
+    This file should be in yaml format and specify each of the
+    file extensions used for config parameter tracking in the results
+    directories and downstream workflows. Yaml format is checked by
+    yaml-cpp but any config file extension is allowed.
+   */
+  std::string get_extension_config() const {
+    return compute_parameter<std::string>("extension-config");
+  }
+
+  /*!
+    \brief get the user-specified top level results directory
+    \return the user-specified top level results directory
+   */
+  std::string get_results_dir() const {
+    return compute_parameter<std::string>("results-dir");
+  }
+
+  /*!
     \brief find status of arbitrary flag
     @param tag name of flag
     \return whether the flag is set
