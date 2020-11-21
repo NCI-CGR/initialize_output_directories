@@ -22,6 +22,23 @@ class yaml_reader {
   ~yaml_reader() throw() {}
 
   void load_file(const std::string &filename);
+  std::string get_entry(const std::string &query) const {
+    std::vector<std::string> queries;
+    queries.push_back(query);
+    return get_entry(queries);
+  }
+  std::string get_entry(const std::vector<std::string> &queries) const {
+    std::vector<std::string> all_results;
+    all_results = get_sequence(queries);
+    if (all_results.size() != 1) {
+      throw std::runtime_error(
+          "invalid number of results for entry query "
+          "ending in \"" +
+          *queries.rbegin() + "\": found " +
+          std::to_string(all_results.size()));
+    }
+    return *all_results.begin();
+  }
   std::vector<std::string> get_sequence(const std::string &query) const {
     std::vector<std::string> queries;
     queries.push_back(query);
