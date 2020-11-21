@@ -64,6 +64,37 @@ class cargs {
   bool help() const { return compute_flag("help"); }
 
   /*!
+    \brief determine whether the run is in pretend mode
+    \return whether the run is in pretend mode
+
+    Pretend mode disables tracker file updating, and just emits analysis
+    prefixes for make dependency resolution. This is designed to be compatible
+    with `make -n`.
+   */
+  bool pretend() const { return compute_flag("pretend"); }
+
+  /*!
+    \brief determine whether the run is in force mode
+    \return whether the run is in force mode
+
+    Force mode overrides standard contextual updates to tracker files
+    and forces the updates regardless. Pretend mode takes precedence,
+    so `--force --pretend` will not change tracking files, but is considered
+    a valid run configuration for compatibility with `make -nB`.
+   */
+  bool force() const { return compute_flag("force"); }
+
+  /*!
+    \brief determine whether the run is in debug mode
+    \return whether the run is in debug mode
+
+    Debug mode provides more diagnostic information about the run.
+    Since `make` is dumb and communicates exclusively with screen text,
+    this just hides dev content
+   */
+  bool debug() const { return compute_flag("debug"); }
+
+  /*!
     \brief get the user-specified phenotype configuration file
     \return the user-specified phenotype configuration file
 
@@ -95,6 +126,35 @@ class cargs {
    */
   std::string get_results_dir() const {
     return compute_parameter<std::string>("results-dir");
+  }
+
+  /*!
+    \brief get the user-specified prefix to all bgen imputation files
+    \return the user-specified prefix to all bgen imputation files
+
+    This is expected to be the top level directory containing the bgen
+    pipeline from the plco-analysis project. Subdirectories in the
+    format "platform/ancestry" should contain bgen and sample files,
+    cleaned (NAs removed if using plink) and indexed.
+   */
+  std::string get_bgen_prefix() const {
+    return compute_parameter<std::string>("bgen-dir");
+  }
+
+  /*!
+    \brief get the user-specified software in use
+    \return the user-specified software in use
+
+    The preprocessing step of the analysis pipelines is where
+    the pipeline figures out if a config file is relevant to the pipeline
+    in use. So the user specifies "saige" for example, and then this
+    software determines whether "saige" is present in the corresponding
+    phenotype yaml.
+
+    Supported options: saige, boltlmm
+   */
+  std::string get_software() const {
+    return compute_parameter<std::string>("software");
   }
 
   /*!
