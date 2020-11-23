@@ -8,7 +8,10 @@
 #ifndef INITIALIZE_OUTPUT_DIRECTORIES_UTILITIES_H_
 #define INITIALIZE_OUTPUT_DIRECTORIES_UTILITIES_H_
 
+#include <algorithm>
 #include <cctype>
+#include <fstream>
+#include <iterator>
 #include <string>
 #include <vector>
 
