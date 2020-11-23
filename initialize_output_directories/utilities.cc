@@ -50,3 +50,14 @@ bool initialize_output_directories::find_entry(
   }
   return false;
 }
+
+unsigned initialize_output_directories::wc(const std::string &filename) {
+  std::ifstream input(filename.c_str());
+  if (!input.is_open())
+    throw std::runtime_error("cannot open file \"" + filename + "\"");
+  // https://stackoverflow.com/questions/3072795/how-to-count-lines-of-a-file-in-c
+  unsigned res = std::count(std::istreambuf_iterator<char>(input),
+                            std::istreambuf_iterator<char>(), '\n');
+  input.close();
+  return res;
+}

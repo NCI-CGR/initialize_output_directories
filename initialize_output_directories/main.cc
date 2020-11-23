@@ -58,8 +58,7 @@ int main(int argc, char **argv) {
     // for each ancestry
     for (std::vector<std::string>::const_iterator ancestry = ancestries.begin();
          ancestry != ancestries.end(); ++ancestry) {
-      // if the software specified on the command line is specified in the pheno
-      // config
+      // if the requested software is specified in the pheno config
       //    and the bgen directory for this chip/ancestry combination exists
       //    and the "chr22-filtered-noNAs.sample" file exists in that directory
       std::string bgen_directory =
@@ -74,37 +73,39 @@ int main(int argc, char **argv) {
           std::filesystem::is_regular_file(
               std::filesystem::path(bgen_samplefile))) {
         // compute number of subjects in this sample file
-
+        unsigned n_subjects =
+            initialize_output_directories::wc(bgen_samplefile) - 2;
         // if there are enough subjects in this sample file to run this
         // particular software
+        if (n_subjects >= software_min_sample_size) {
+          // build the results directory name:
+          // {results/phenotype/ancestry/SOFTWARE}
+          std::string results_prefix =
+              results_dir + "/" + analysis_prefix + "/" + *ancestry + "/" +
+              initialize_output_directories::uppercase(software) + "/" +
+              analysis_prefix + "." + *chip + "." +
+              initialize_output_directories::lowercase(software);
+          // presumably build a tracker class and initialize an instance of it
+          //   and make the directory if needed
+          initialize_output_directories::tracking_files tf(results_prefix);
 
-        // build the results directory name:
-        // {results/phenotype/ancestry/SOFTWARE}
-        std::string results_prefix =
-            results_dir + "/" + analysis_prefix + "/" + *ancestry + "/" +
-            initialize_output_directories::uppercase(software) + "/" +
-            analysis_prefix + "." + *chip + "." +
-            initialize_output_directories::lowercase(software);
-        // presumably build a tracker class and initialize an instance of it
-        //   and make the directory if needed
-        initialize_output_directories::tracking_files tf(results_prefix);
+          // make the tracker class determine if updates are needed for:
+          // phenotype database used and history
+          // phenotype variable
+          // covariates
+          // frequency type
+          // ID format
+          // phenotype transformation
+          // sex-specific analysis
+          // control inclusions
+          // control exclusions
+          // finalized analysis indicator
 
-        // make the tracker class determine if updates are needed for:
-        // phenotype database used and history
-        // phenotype variable
-        // covariates
-        // frequency type
-        // ID format
-        // phenotype transformation
-        // sex-specific analysis
-        // control inclusions
-        // control exclusions
-        // finalized analysis indicator
-
-        // finally, trigger update if needed. for categoricals (n comparisons >
-        // 1)
-        //    emit results in "comparison[1-n]" subdirectories only; otherwise,
-        //    emit directly to the top-level directory.
+          // finally, trigger update if needed. for categoricals (n comparisons
+          // > 1)
+          //    emit results in "comparison[1-n]" subdirectories only;
+          //    otherwise, emit directly to the top-level directory.
+        }
       }
     }
   }

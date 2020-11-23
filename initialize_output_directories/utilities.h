@@ -24,6 +24,8 @@ bool cicompare(const std::string &s1, const std::string &s2);
 bool find_entry(const std::string &query,
                 const std::vector<std::string> &sequence);
 
+unsigned wc(const std::string &filename);
+
 }  // namespace initialize_output_directories
 
 #endif  // INITIALIZE_OUTPUT_DIRECTORIES_UTILITIES_H_
