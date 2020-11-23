@@ -87,7 +87,8 @@ int main(int argc, char **argv) {
               initialize_output_directories::lowercase(software);
           // presumably build a tracker class and initialize an instance of it
           //   and make the directory if needed
-          initialize_output_directories::tracking_files tf(results_prefix);
+          initialize_output_directories::tracking_files tf(results_prefix,
+                                                           extension_config);
 
           // make the tracker class determine if updates are needed for:
           // phenotype database used and history
