@@ -26,8 +26,11 @@ int main(int argc, char **argv) {
   std::string phenotype_config_filename = ap.get_phenotype_config();
   std::string extension_config_filename = ap.get_extension_config();
   std::string bgen_prefix = ap.get_bgen_prefix();
+  std::string phenotype_database = ap.get_phenotype_database();
+  std::string phenotype_id_colname = ap.get_phenotype_id_colname();
   std::string results_dir = ap.get_results_dir();
   std::string software = ap.get_software();
+  unsigned software_min_sample_size = ap.get_software_min_sample_size();
   bool pretend = ap.pretend();
   bool force = ap.force();
   bool debug = ap.debug();
@@ -77,10 +80,14 @@ int main(int argc, char **argv) {
 
         // build the results directory name:
         // {results/phenotype/ancestry/SOFTWARE}
-
+        std::string results_prefix =
+            results_dir + "/" + analysis_prefix + "/" + *ancestry + "/" +
+            initialize_output_directories::uppercase(software) + "/" +
+            analysis_prefix + "." + *chip + "." +
+            initialize_output_directories::lowercase(software);
         // presumably build a tracker class and initialize an instance of it
-
-        // make the directory if needed
+        //   and make the directory if needed
+        initialize_output_directories::tracking_files tf(results_prefix);
 
         // make the tracker class determine if updates are needed for:
         // phenotype database used and history
