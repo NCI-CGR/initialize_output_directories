@@ -52,3 +52,21 @@ void initialize_output_directories::model_matrix::load_data(
   }
   input.close();
 }
+
+void initialize_output_directories::tracking_files::initialize(
+    const yaml_reader &config) {
+  // pull the required presets from this extension configuration
+  _phenotype_dataset_suffix = config.get_entry("phenotype-dataset");
+  _phenotype_suffix = config.get_entry("phenotype");
+  _covariates_suffix = config.get_entry("covariates");
+  _categories_suffix = config.get_entry("categories");
+  _finalized_suffix = config.get_entry("finalization");
+  // get as many custom extensions as are available
+  std::vector<std::pair<std::string, std::string> > data;
+  data = config.get_map("general-extensions");
+  for (std::vector<std::pair<std::string, std::string> >::const_iterator iter =
+           data.begin();
+       iter != data.end(); ++iter) {
+    _general_extensions[iter->first] = iter->second;
+  }
+}

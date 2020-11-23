@@ -12,7 +12,10 @@
 #include <sstream>
 #include <stdexcept>
 #include <string>
+#include <utility>
 #include <vector>
+
+#include "initialize_output_directories/yaml_reader.h"
 
 namespace initialize_output_directories {
 class model_matrix {
@@ -76,14 +79,42 @@ class model_matrix {
 
 class tracking_files {
  public:
-  tracking_files() : _output_prefix("") {}
-  explicit tracking_files(const std::string &s) : _output_prefix(s) {}
+  tracking_files()
+      : _output_prefix(""),
+        _phenotype_dataset_suffix(""),
+        _phenotype_suffix(""),
+        _covariates_suffix(""),
+        _categories_suffix(""),
+        _finalized_suffix("") {}
+  tracking_files(const std::string &s, const yaml_reader &config)
+      : _output_prefix(s),
+        _phenotype_dataset_suffix(""),
+        _phenotype_suffix(""),
+        _covariates_suffix(""),
+        _categories_suffix(""),
+        _finalized_suffix("") {
+    initialize(config);
+  }
   tracking_files(const tracking_files &obj)
-      : _output_prefix(obj._output_prefix) {}
+      : _output_prefix(obj._output_prefix),
+        _phenotype_dataset_suffix(obj._phenotype_dataset_suffix),
+        _phenotype_suffix(obj._phenotype_suffix),
+        _covariates_suffix(obj._covariates_suffix),
+        _categories_suffix(obj._categories_suffix),
+        _finalized_suffix(obj._finalized_suffix),
+        _general_extensions(obj._general_extensions) {}
   ~tracking_files() throw() {}
+
+  void initialize(const yaml_reader &config);
 
  private:
   std::string _output_prefix;
+  std::string _phenotype_dataset_suffix;
+  std::string _phenotype_suffix;
+  std::string _covariates_suffix;
+  std::string _categories_suffix;
+  std::string _finalized_suffix;
+  std::map<std::string, std::string> _general_extensions;
 };
 }  // namespace initialize_output_directories
 
