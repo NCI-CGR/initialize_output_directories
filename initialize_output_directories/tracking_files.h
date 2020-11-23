@@ -77,6 +77,7 @@ class model_matrix {
 class tracking_files {
  public:
   tracking_files() : _output_prefix("") {}
+  explicit tracking_files(const std::string &s) : _output_prefix(s) {}
   tracking_files(const tracking_files &obj)
       : _output_prefix(obj._output_prefix) {}
   ~tracking_files() throw() {}
