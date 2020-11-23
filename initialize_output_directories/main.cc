@@ -10,6 +10,7 @@
 #include <stdexcept>
 
 #include "initialize_output_directories/cargs.h"
+#include "initialize_output_directories/tracking_files.h"
 #include "initialize_output_directories/utilities.h"
 #include "initialize_output_directories/yaml_reader.h"
 
