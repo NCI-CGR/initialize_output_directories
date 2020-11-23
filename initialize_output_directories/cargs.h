@@ -108,6 +108,36 @@ class cargs {
   }
 
   /*!
+    \brief get the user-specified phenotype database filename
+    \return the user-specified phenotype database filename
+
+    The phenotype database is dynamically parsed out to determine
+    if changes in the phenotype database used for an association test
+    have any impact on the particular analysis being run. If the changes,
+    in the phenotype file do not impact any of the variables in the
+    model matrix, then the analysis trackers will not be updated
+    unless there are other changes to the configuration specification
+    that do impact the run output.
+   */
+  std::string get_phenotype_database() const {
+    return compute_parameter<std::string>("phenotype-database");
+  }
+
+  /*!
+    \brief get the user-specified name of the subject ID column
+    in the phenotype dataset
+    \return the user-specified name of the subject ID column
+    in the phenotype dataset
+
+    This is required in case there are sorting changes in the phenotype
+    database that do not actually impact the model matrix. For the PLCO
+    project, this value should be "plco_id".
+   */
+  std::string get_phenotype_id_colname() const {
+    return compute_parameter<std::string>("phenotype-id-colname");
+  }
+
+  /*!
     \brief get the user-specified extension configuration file
     \return the user-specified extension configuration file
 
@@ -155,6 +185,18 @@ class cargs {
    */
   std::string get_software() const {
     return compute_parameter<std::string>("software");
+  }
+
+  /*!
+    \brief get minimum sample size for the requested software
+    \return the minimum sample size for the requested software
+
+    Each of the analysis tools supported by the pipeline has a different
+    heuristic minimum sample size requirement. This lets the user
+    specify that as needed.
+   */
+  unsigned get_software_min_sample_size() const {
+    return compute_parameter<unsigned>("software-min-sample-size");
   }
 
   /*!

@@ -15,6 +15,10 @@ void initialize_output_directories::cargs::initialize_options() {
       "force,B", "force updates to all tracking files unless in pretend mode")(
       "phenotype-config,p", boost::program_options::value<std::string>(),
       "phenotype configuration file, yaml format")(
+      "phenotype-database", boost::program_options::value<std::string>(),
+      "name of current phenotype dataset in use")(
+      "phenotype-id-colname", boost::program_options::value<std::string>(),
+      "column header for subject IDs in phenotype dataset")(
       "pretend,n",
       "emit analysis target directories but do not write any changes to disk")(
       "bgen-dir,b", boost::program_options::value<std::string>(),
