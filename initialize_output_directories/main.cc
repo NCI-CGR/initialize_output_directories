@@ -45,7 +45,6 @@ int main(int argc, char **argv) {
   std::vector<std::string> chips = pheno_config.get_sequence("chips");
   std::vector<std::string> ancestries = pheno_config.get_sequence("ancestries");
   std::vector<std::string> algorithms = pheno_config.get_sequence("algorithm");
-  std::string phenotype = pheno_config.get_entry("phenotype");
 
   // if one of the algorithms is what was requested on the command line
   if (initialize_output_directories::find_entry("saige", algorithms)) {
@@ -73,6 +72,7 @@ int main(int argc, char **argv) {
           std::filesystem::is_regular_file(
               std::filesystem::path(bgen_samplefile))) {
         // compute number of subjects in this sample file
+        // deduct 2 because of .sample file header conventions
         unsigned n_subjects =
             initialize_output_directories::wc(bgen_samplefile) - 2;
         // if there are enough subjects in this sample file to run this
