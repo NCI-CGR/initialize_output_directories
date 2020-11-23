@@ -17,6 +17,22 @@ std::string initialize_output_directories::strreplace(const std::string &input,
   return res;
 }
 
+std::string initialize_output_directories::uppercase(const std::string &s) {
+  std::string res = s;
+  for (std::string::iterator iter = res.begin(); iter != res.end(); ++iter) {
+    *iter = toupper(*iter);
+  }
+  return res;
+}
+
+std::string initialize_output_directories::lowercase(const std::string &s) {
+  std::string res = s;
+  for (std::string::iterator iter = res.begin(); iter != res.end(); ++iter) {
+    *iter = tolower(*iter);
+  }
+  return res;
+}
+
 bool initialize_output_directories::cicompare(const std::string &s1,
                                               const std::string &s2) {
   if (s1.size() != s2.size()) return false;
