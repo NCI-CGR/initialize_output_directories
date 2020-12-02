@@ -14,7 +14,7 @@ void initialize_output_directories::yaml_reader::load_file(
 std::vector<std::string>
 initialize_output_directories::yaml_reader::get_sequence(
     const std::vector<std::string> &queries) const {
-  YAML::Node current = _data, next;
+  YAML::Node current = YAML::Clone(_data), next;
   std::vector<std::string> res;
   apply_queries(queries, &current, &next);
   if (current.Type() == YAML::NodeType::Scalar) {
@@ -37,7 +37,7 @@ initialize_output_directories::yaml_reader::get_sequence(
 std::vector<std::pair<std::string, std::string> >
 initialize_output_directories::yaml_reader::get_map(
     const std::vector<std::string> &queries) const {
-  YAML::Node current = _data, next;
+  YAML::Node current = YAML::Clone(_data), next;
   std::vector<std::pair<std::string, std::string> > res;
   apply_queries(queries, &current, &next);
   if (current.Type() == YAML::NodeType::Map) {
@@ -58,7 +58,7 @@ initialize_output_directories::yaml_reader::get_map(
 
 bool initialize_output_directories::yaml_reader::query_valid(
     const std::vector<std::string> &queries) const {
-  YAML::Node current = _data, next;
+  YAML::Node current = YAML::Clone(_data), next;
   try {
     apply_queries(queries, &current, &next);
   } catch (const std::runtime_error &e) {
@@ -72,22 +72,37 @@ void initialize_output_directories::yaml_reader::apply_queries(
     YAML::Node *next) const {
   if (!current || !next)
     throw std::runtime_error("apply_queries: null pointer");
+  if (queries.empty())
+    throw std::runtime_error("apply_queries: no query provided");
+  if (current->Type() != YAML::NodeType::Sequence &&
+      current->Type() != YAML::NodeType::Map) {
+    throw std::runtime_error(
+        "apply_queries: starting node not "
+        "Sequence or Map, cannot apply query \"" +
+        queries.at(0) + "\"");
+  }
   for (unsigned i = 0; i < queries.size(); ++i) {
     *next = (*current)[queries.at(i)];
     switch (next->Type()) {
       case YAML::NodeType::Null:
-        throw std::runtime_error("get_value: query \"" + queries.at(i) +
+        throw std::runtime_error("apply_queries: query \"" + queries.at(i) +
                                  "\" not present at query level");
       case YAML::NodeType::Scalar:
+        if (i != queries.size() - 1)
+          throw std::runtime_error("apply_queries: query \"" + queries.at(i) +
+                                   "\" found scalar terminator");
         break;
       case YAML::NodeType::Sequence:
         break;
       case YAML::NodeType::Map:
         break;
       case YAML::NodeType::Undefined:
-        throw std::runtime_error("get_value: Undefined node type encountered");
+        throw std::runtime_error(
+            "apply_queries: Undefined node type encountered"
+            " for query \"" +
+            queries.at(i) + "\"");
       default:
-        throw std::runtime_error("get_value: unrecognized node type?");
+        throw std::runtime_error("apply_queries: unrecognized node type?");
     }
     *current = *next;
   }
