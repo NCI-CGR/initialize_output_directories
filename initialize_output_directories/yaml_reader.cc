@@ -56,6 +56,17 @@ initialize_output_directories::yaml_reader::get_map(
   return res;
 }
 
+bool initialize_output_directories::yaml_reader::query_valid(
+    const std::vector<std::string> &queries) const {
+  YAML::Node current = _data, next;
+  try {
+    apply_queries(queries, &current, &next);
+  } catch (const std::runtime_error &e) {
+    return false;
+  }
+  return true;
+}
+
 void initialize_output_directories::yaml_reader::apply_queries(
     const std::vector<std::string> &queries, YAML::Node *current,
     YAML::Node *next) const {
