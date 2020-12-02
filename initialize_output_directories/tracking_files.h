@@ -8,7 +8,6 @@
 #define INITIALIZE_OUTPUT_DIRECTORIES_TRACKING_FILES_H_
 
 #include <algorithm>
-#include <filesystem>
 #include <fstream>
 #include <iostream>
 #include <map>
@@ -19,6 +18,7 @@
 #include <utility>
 #include <vector>
 
+#include "boost/filesystem.hpp"
 #include "initialize_output_directories/yaml_reader.h"
 
 namespace initialize_output_directories {

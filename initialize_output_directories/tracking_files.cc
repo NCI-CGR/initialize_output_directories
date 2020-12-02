@@ -120,8 +120,8 @@ void initialize_output_directories::tracking_files::initialize(
   std::string target_dir =
       get_output_prefix().substr(0, get_output_prefix().rfind("/"));
   std::cout << "initialize target dir is \"" << target_dir << "\"" << std::endl;
-  std::filesystem::path target_dir_path = target_dir;
-  std::filesystem::create_directories(target_dir_path);
+  boost::filesystem::path target_dir_path = target_dir;
+  boost::filesystem::create_directories(target_dir_path);
   // pull the required presets from this extension configuration
   _phenotype_dataset_suffix = config.get_entry("phenotype-dataset");
   _phenotype_suffix = config.get_entry("phenotype");
@@ -153,7 +153,7 @@ bool initialize_output_directories::tracking_files::check_file(
   std::vector<std::string> values;
   values = config.get_sequence(tag);
   std::string filename = get_output_prefix() + suffix;
-  if (!std::filesystem::is_regular_file(std::filesystem::path(filename))) {
+  if (!boost::filesystem::is_regular_file(boost::filesystem::path(filename))) {
     update_tracker(filename, values, false);
     return true;
   }
@@ -200,7 +200,7 @@ bool initialize_output_directories::tracking_files::check_phenotype_database(
   std::string filename = get_output_prefix() + get_phenotype_dataset_suffix();
   std::vector<std::string> update_contents;
   update_contents.push_back(phenotype_filename);
-  if (!std::filesystem::is_regular_file(std::filesystem::path(filename)) ||
+  if (!boost::filesystem::is_regular_file(boost::filesystem::path(filename)) ||
       force) {
     update_tracker(filename, update_contents, false);
     return true;
@@ -238,7 +238,7 @@ bool initialize_output_directories::tracking_files::check_phenotype_database(
     for (std::vector<std::string>::const_iterator iter =
              previous_datasets.begin();
          iter != previous_datasets.end(); ++iter) {
-      if (std::filesystem::is_regular_file(std::filesystem::path(*iter))) {
+      if (boost::filesystem::is_regular_file(boost::filesystem::path(*iter))) {
         old_mm.load_data(*iter);
         break;
       }
@@ -278,7 +278,7 @@ bool initialize_output_directories::tracking_files::check_files(
 void initialize_output_directories::tracking_files::remove_finalization()
     const {
   std::string finalization_file = get_output_prefix() + get_finalized_suffix();
-  std::filesystem::remove(std::filesystem::path(finalization_file));
+  boost::filesystem::remove(boost::filesystem::path(finalization_file));
 }
 
 void initialize_output_directories::tracking_files::update_tracker(
@@ -307,7 +307,7 @@ void initialize_output_directories::tracking_files::copy_trackers(
       get_output_prefix().substr(0, get_output_prefix().rfind("/")) +
       "comparison" + std::to_string(comparison_number);
   std::string target_prefix = target_dir + "/" + file_prefix;
-  std::filesystem::create_directories(std::filesystem::path(target_dir));
+  boost::filesystem::create_directories(boost::filesystem::path(target_dir));
   // acquire suffixes of copyable files
   std::vector<std::string> suffixes;
   suffixes.push_back(get_phenotype_dataset_suffix());
@@ -322,10 +322,11 @@ void initialize_output_directories::tracking_files::copy_trackers(
   // target
   for (std::vector<std::string>::const_iterator iter = suffixes.begin();
        iter != suffixes.end(); ++iter) {
-    if (std::filesystem::is_regular_file(
-            std::filesystem::path(get_output_prefix() + *iter))) {
-      std::filesystem::copy(std::filesystem::path(get_output_prefix() + *iter),
-                            std::filesystem::path(target_prefix + *iter));
+    if (boost::filesystem::is_regular_file(
+            boost::filesystem::path(get_output_prefix() + *iter))) {
+      boost::filesystem::copy(
+          boost::filesystem::path(get_output_prefix() + *iter),
+          boost::filesystem::path(target_prefix + *iter));
     }
   }
   // only for the comparison level tracker: emit the comparison level

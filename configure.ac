@@ -27,6 +27,7 @@ AC_PROG_CXX_C_O
 # Checks for libraries.
 AX_BOOST_BASE([1.63.0])
 AX_BOOST_PROGRAM_OPTIONS
+AX_BOOST_FILESYSTEM
 # Checks for header files.
 
 # Checks for typedefs, structures, and compiler characteristics.

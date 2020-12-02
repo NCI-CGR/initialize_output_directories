@@ -5,10 +5,10 @@
   Copyright 2020 Cameron Palmer.
  */
 
-#include <filesystem>
 #include <iostream>
 #include <stdexcept>
 
+#include "boost/filesystem.hpp"
 #include "initialize_output_directories/cargs.h"
 #include "initialize_output_directories/tracking_files.h"
 #include "initialize_output_directories/utilities.h"
@@ -79,11 +79,11 @@ int main(int argc, char **argv) {
                 << std::endl;
       std::cout << "bgen samplefile is \"" << bgen_samplefile << "\""
                 << std::endl;
-      std::filesystem::path bgen_dir_path = bgen_directory;
-      std::filesystem::path bgen_sample_path = bgen_samplefile;
+      boost::filesystem::path bgen_dir_path = bgen_directory;
+      boost::filesystem::path bgen_sample_path = bgen_samplefile;
       if (initialize_output_directories::find_entry(software, algorithms) &&
-          std::filesystem::is_directory(bgen_dir_path) &&
-          std::filesystem::is_regular_file(bgen_sample_path)) {
+          boost::filesystem::is_directory(bgen_dir_path) &&
+          boost::filesystem::is_regular_file(bgen_sample_path)) {
         // compute number of subjects in this sample file
         // deduct 2 because of .sample file header conventions
         unsigned n_subjects =
