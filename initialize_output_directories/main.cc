@@ -75,11 +75,15 @@ int main(int argc, char **argv) {
           *ancestry;
       std::string bgen_samplefile =
           bgen_directory + "/chr22-filtered-noNAs.sample";
+      std::cout << "bgen directory is \"" << bgen_directory << "\""
+                << std::endl;
+      std::cout << "bgen samplefile is \"" << bgen_samplefile << "\""
+                << std::endl;
+      std::filesystem::path bgen_dir_path = bgen_directory;
+      std::filesystem::path bgen_sample_path = bgen_samplefile;
       if (initialize_output_directories::find_entry(software, algorithms) &&
-          std::filesystem::is_directory(
-              std::filesystem::path(bgen_directory)) &&
-          std::filesystem::is_regular_file(
-              std::filesystem::path(bgen_samplefile))) {
+          std::filesystem::is_directory(bgen_dir_path) &&
+          std::filesystem::is_regular_file(bgen_sample_path)) {
         // compute number of subjects in this sample file
         // deduct 2 because of .sample file header conventions
         unsigned n_subjects =

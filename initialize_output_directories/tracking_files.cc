@@ -117,8 +117,11 @@ initialize_output_directories::model_matrix::categorize(
 void initialize_output_directories::tracking_files::initialize(
     const yaml_reader &config) {
   // create the target directory if needed
-  std::filesystem::create_directories(std::filesystem::path(
-      get_output_prefix().substr(0, get_output_prefix().rfind("/"))));
+  std::string target_dir =
+      get_output_prefix().substr(0, get_output_prefix().rfind("/"));
+  std::cout << "initialize target dir is \"" << target_dir << "\"" << std::endl;
+  std::filesystem::path target_dir_path = target_dir;
+  std::filesystem::create_directories(target_dir_path);
   // pull the required presets from this extension configuration
   _phenotype_dataset_suffix = config.get_entry("phenotype-dataset");
   _phenotype_suffix = config.get_entry("phenotype");
