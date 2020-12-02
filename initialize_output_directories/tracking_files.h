@@ -7,8 +7,11 @@
 #ifndef INITIALIZE_OUTPUT_DIRECTORIES_TRACKING_FILES_H_
 #define INITIALIZE_OUTPUT_DIRECTORIES_TRACKING_FILES_H_
 
+#include <algorithm>
+#include <filesystem>
 #include <fstream>
 #include <map>
+#include <set>
 #include <sstream>
 #include <stdexcept>
 #include <string>
@@ -18,6 +21,54 @@
 #include "initialize_output_directories/yaml_reader.h"
 
 namespace initialize_output_directories {
+class categorical_variable {
+ public:
+  categorical_variable() {}
+  categorical_variable(const categorical_variable &obj)
+      : _reference_group(obj._reference_group),
+        _comparison_groups(obj._comparison_groups) {}
+  ~categorical_variable() throw() {}
+
+  void set_reference_level(unsigned u) {
+    _reference_group.clear();
+    _reference_group.emplace(u);
+  }
+  void set_reference_level(const std::set<unsigned> &s) {
+    _reference_group = s;
+  }
+  void add_comparison_group(unsigned u) {
+    std::set<unsigned> s;
+    s.emplace(u);
+    add_comparison_group(s);
+  }
+  void add_comparison_group(const std::set<unsigned> &s) {
+    _comparison_groups.push_back(s);
+  }
+
+  const std::set<unsigned> &get_reference_group() const {
+    return _reference_group;
+  }
+  const std::set<unsigned> &get_comparison_group(unsigned index) const {
+    if (index >= _comparison_groups.size())
+      throw std::runtime_error("comparison index " + std::to_string(index) +
+                               " out of bounds (total comparison set count " +
+                               std::to_string(n_comparison_groups()) + ")");
+    return _comparison_groups.at(index);
+  }
+  std::vector<std::set<unsigned> >::const_iterator comparison_begin() const {
+    return _comparison_groups.begin();
+  }
+  std::vector<std::set<unsigned> >::const_iterator comparison_end() const {
+    return _comparison_groups.end();
+  }
+  unsigned n_comparison_groups() const { return _comparison_groups.size(); }
+  unsigned size() const { return n_comparison_groups() + 1; }
+
+ private:
+  std::set<unsigned> _reference_group;
+  std::vector<std::set<unsigned> > _comparison_groups;
+};
+
 class model_matrix {
  public:
   model_matrix() : _id(""), _phenotype("") {}
@@ -26,6 +77,7 @@ class model_matrix {
         _phenotype(obj._phenotype),
         _covariates(obj._covariates),
         _ids(obj._ids),
+        _headers(obj._headers),
         _data(obj._data) {}
   ~model_matrix() throw() {}
 
@@ -56,6 +108,8 @@ class model_matrix {
     return _data;
   }
 
+  categorical_variable categorize(const std::string &name) const;
+
   bool operator==(const model_matrix &obj) const {
     if (get_ids().size() != obj.get_ids().size()) return false;
     if (get_data().size() != obj.get_data().size()) return false;
@@ -69,11 +123,18 @@ class model_matrix {
     return true;
   }
 
+  bool operator!=(const model_matrix &obj) const { return !(*this == obj); }
+
+  bool empty() const {
+    return _headers.empty() && _ids.empty() && _data.empty();
+  }
+
  private:
   std::string _id;
   std::string _phenotype;
   std::vector<std::string> _covariates;
   std::vector<std::string> _ids;
+  std::vector<std::string> _headers;
   std::vector<std::vector<std::string> > _data;
 };
 
@@ -106,6 +167,35 @@ class tracking_files {
   ~tracking_files() throw() {}
 
   void initialize(const yaml_reader &config);
+  bool check_phenotype_database(const yaml_reader &config,
+                                const model_matrix &input_model,
+                                const std::string &phenotype_filename,
+                                bool pretend, bool force) const;
+  bool check_files(const yaml_reader &config, const model_matrix &input_model,
+                   const std::string &phenotype_filename, bool pretend,
+                   bool force) const;
+  bool check_file(const yaml_reader &config, const std::string &tag,
+                  const std::string &suffix, bool pretend, bool force) const;
+  void remove_finalization() const;
+  void copy_trackers(unsigned comparison_number,
+                     const std::set<unsigned> &reference,
+                     const std::set<unsigned> &comparison) const;
+
+ protected:
+  const std::string &get_phenotype_dataset_suffix() const {
+    return _phenotype_dataset_suffix;
+  }
+  const std::string &get_phenotype_suffix() const { return _phenotype_suffix; }
+  const std::string &get_covariates_suffix() const {
+    return _covariates_suffix;
+  }
+  const std::string &get_categories_suffix() const {
+    return _categories_suffix;
+  }
+  const std::string &get_output_prefix() const { return _output_prefix; }
+  const std::string &get_finalized_suffix() const { return _finalized_suffix; }
+  void update_tracker(const std::string &filename,
+                      const std::vector<std::string> &vec, bool append) const;
 
  private:
   std::string _output_prefix;
