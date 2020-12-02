@@ -15,9 +15,9 @@ void initialize_output_directories::cargs::initialize_options() {
       "force,B", "force updates to all tracking files unless in pretend mode")(
       "phenotype-config,p", boost::program_options::value<std::string>(),
       "phenotype configuration file, yaml format")(
-      "phenotype-database", boost::program_options::value<std::string>(),
+      "phenotype-database,D", boost::program_options::value<std::string>(),
       "name of current phenotype dataset in use")(
-      "phenotype-id-colname", boost::program_options::value<std::string>(),
+      "phenotype-id-colname,I", boost::program_options::value<std::string>(),
       "column header for subject IDs in phenotype dataset")(
       "pretend,n",
       "emit analysis target directories but do not write any changes to disk")(
@@ -26,5 +26,7 @@ void initialize_output_directories::cargs::initialize_options() {
       "results-dir,r", boost::program_options::value<std::string>(),
       "top level directory containing analysis results")(
       "software,s", boost::program_options::value<std::string>(),
-      "requested software (e.g. SAIGE, BOLTLMM)");
+      "requested software (e.g. SAIGE, BOLTLMM)")(
+      "software-min-sample-size,N", boost::program_options::value<unsigned>(),
+      "minimum heuristic sample size for software");
 }
