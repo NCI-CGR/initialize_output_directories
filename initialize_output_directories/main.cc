@@ -46,10 +46,19 @@ int main(int argc, char **argv) {
   std::vector<std::string> ancestries = pheno_config.get_sequence("ancestries");
   std::vector<std::string> algorithms = pheno_config.get_sequence("algorithm");
 
+  initialize_output_directories::model_matrix mm;
+  mm.set_id(phenotype_id_colname);
+  mm.set_phenotype(pheno_config.get_entry("phenotype"));
+  if (pheno_config.query_valid("covariates")) {
+    mm.set_covariates(pheno_config.get_sequence("covariates"));
+  }
   // if one of the algorithms is what was requested on the command line
+  initialize_output_directories::categorical_variable categories;
   if (initialize_output_directories::find_entry("saige", algorithms)) {
     // compute groups and sizes, combining any group with N<100 into
     //    a single meta-group
+    mm.load_data(phenotype_database);
+    categories = mm.categorize(pheno_config.get_entry("phenotype"));
   }
   // for each chip
   for (std::vector<std::string>::const_iterator chip = chips.begin();
@@ -89,23 +98,42 @@ int main(int argc, char **argv) {
           //   and make the directory if needed
           initialize_output_directories::tracking_files tf(results_prefix,
                                                            extension_config);
-
-          // make the tracker class determine if updates are needed for:
-          // phenotype database used and history
-          // phenotype variable
-          // covariates
-          // frequency type
-          // ID format
-          // phenotype transformation
-          // sex-specific analysis
-          // control inclusions
-          // control exclusions
-          // finalized analysis indicator
-
-          // finally, trigger update if needed. for categoricals (n comparisons
-          // > 1)
-          //    emit results in "comparison[1-n]" subdirectories only;
-          //    otherwise, emit directly to the top-level directory.
+          // make the tracker class determine if updates are needed
+          bool updated = tf.check_files(pheno_config, mm, phenotype_database,
+                                        pretend, force);
+          // for categoricals (n comparisons > 1)
+          //    copy top-level trackers into "comparison[1-n]" subdirectories
+          if (updated) {
+            tf.remove_finalization();
+            // if there are more than two categories
+            if (categories.size() > 2) {
+              unsigned comparison_count = 1;
+              for (std::vector<std::set<unsigned> >::const_iterator iter =
+                       categories.comparison_begin();
+                   iter != categories.comparison_end();
+                   ++iter, ++comparison_count) {
+                // at some point, this will have to be moved outside of this
+                // conditional, as the assignment of reference and comparison
+                // groups will be exposed as a configuration variable. but for
+                // now, comparison groups are determined by phenotype database
+                // counts, which is deterministic pending things that guarantee
+                // `updated == true`
+                tf.copy_trackers(comparison_count,
+                                 categories.get_reference_group(), *iter);
+              }
+            }
+          }
+          // actually emit output prefixes as appropriate
+          if (categories.size() > 2) {
+            // for categorical data, suppress the top level directory
+            // as an analysis target, and just emit the comparison
+            // subdirectories
+            for (unsigned i = 1; i <= categories.n_comparison_groups(); ++i) {
+              std::cout << results_prefix << "/comparison" << i << std::endl;
+            }
+          } else {
+            std::cout << results_prefix << std::endl;
+          }
         }
       }
     }
