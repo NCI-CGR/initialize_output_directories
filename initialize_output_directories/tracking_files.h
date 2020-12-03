@@ -20,6 +20,7 @@
 
 #include "boost/filesystem.hpp"
 #include "initialize_output_directories/yaml_reader.h"
+#include "yaml-cpp/yaml.h"
 
 namespace initialize_output_directories {
 class categorical_variable {
@@ -176,8 +177,8 @@ class tracking_files {
                    const std::string &phenotype_filename, bool pretend,
                    bool force) const;
   bool check_file(const yaml_reader &config, const std::string &tag,
-                  const std::string &suffix, bool pretend, bool force,
-                  bool must_exist) const;
+                  const std::string &suffix, const std::string &value_default,
+                  bool pretend, bool force, bool must_exist) const;
   void remove_finalization() const;
   void copy_trackers(unsigned comparison_number,
                      const std::set<unsigned> &reference,
@@ -206,7 +207,8 @@ class tracking_files {
   std::string _covariates_suffix;
   std::string _categories_suffix;
   std::string _finalized_suffix;
-  std::map<std::string, std::string> _general_extensions;
+  std::map<std::string, std::pair<std::string, std::string> >
+      _general_extensions;
 };
 }  // namespace initialize_output_directories
 

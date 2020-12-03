@@ -135,40 +135,59 @@ void initialize_output_directories::tracking_files::initialize(
   _categories_suffix = config.get_entry("categories");
   _finalized_suffix = config.get_entry("finalization");
   // get as many custom extensions as are available
-  std::vector<std::pair<std::string, std::string> > data;
-  data = config.get_map("general-extensions");
-  for (std::vector<std::pair<std::string, std::string> >::const_iterator iter =
-           data.begin();
-       iter != data.end(); ++iter) {
-    _general_extensions[iter->first] = iter->second;
+  YAML::Node data;
+  data = config.get_node("general-extensions");
+  // should be a map
+  if (data.Type() != YAML::NodeType::Map) {
+    throw std::runtime_error(
+        "initialize: extensions config entry 'general-extensions'"
+        " is supposed to be a YAML Map, but is not :(");
+  }
+  for (YAML::const_iterator iter = data.begin(); iter != data.end(); ++iter) {
+    if (iter->second["suffix"] && iter->second["default"]) {
+      if (iter->second["suffix"].IsScalar() &&
+          iter->second["default"].IsScalar()) {
+        _general_extensions[iter->first.as<std::string>()] =
+            std::make_pair(iter->second["suffix"].as<std::string>(),
+                           iter->second["default"].as<std::string>());
+      } else {
+        throw std::runtime_error(
+            "initialize: extensions config entry 'general-extensions'"
+            " key '" +
+            iter->first.as<std::string>() +
+            "' is supposed to contain "
+            "simple key:value pairs, but is not for either entry 'suffix' or "
+            "'default'");
+      }
+    } else {
+      throw std::runtime_error(
+          "initialize: extensions config entry 'general-extensions'"
+          " should have maps containing at least keys 'suffix' and "
+          "'default', but key '" +
+          iter->first.as<std::string>() + "' does not");
+    }
   }
 }
 
 bool initialize_output_directories::tracking_files::check_file(
     const yaml_reader &config, const std::string &tag,
-    const std::string &suffix, bool pretend, bool force,
-    bool must_exist) const {
+    const std::string &suffix, const std::string &value_default, bool pretend,
+    bool force, bool must_exist) const {
   if (pretend) return false;
   std::string line = "";
   std::vector<std::string> values;
   std::string filename = get_output_prefix() + suffix;
   // weird corner case: current config doesn't have entry but previous run did
   if (!config.query_valid(tag)) {
-    if (must_exist)
+    if (must_exist && value_default.empty())
       throw std::runtime_error("check_file: essential tag \"" + tag +
                                "\" not found "
                                "in configuration for analysis \"" +
                                get_output_prefix() + "\"");
-    if (boost::filesystem::is_regular_file(boost::filesystem::path(filename))) {
-      // file was previously written but needs to be purged now
-      boost::filesystem::remove(boost::filesystem::path(filename));
-      // signal a rerun, alas
-      return true;
-    }
-    // file isn't present, which is consistent; no update required
-    return false;
+    values.push_back(value_default);
+  } else {
+    values = config.get_sequence(tag);
   }
-  values = config.get_sequence(tag);
   if (!boost::filesystem::is_regular_file(boost::filesystem::path(filename))) {
     update_tracker(filename, values, false);
     return true;
@@ -279,14 +298,16 @@ bool initialize_output_directories::tracking_files::check_files(
     const std::string &phenotype_filename, bool pretend, bool force) const {
   bool res = check_phenotype_database(config, input_model, phenotype_filename,
                                       pretend, force);
-  res |= check_file(config, "phenotype", get_phenotype_suffix(), pretend, force,
-                    true);
-  res |= check_file(config, "covariates", get_covariates_suffix(), pretend,
+  res |= check_file(config, "phenotype", get_phenotype_suffix(), "", pretend,
+                    force, true);
+  res |= check_file(config, "covariates", get_covariates_suffix(), "", pretend,
                     force, false);
-  for (std::map<std::string, std::string>::const_iterator iter =
+  for (std::map<std::string,
+                std::pair<std::string, std::string> >::const_iterator iter =
            _general_extensions.begin();
        iter != _general_extensions.end(); ++iter) {
-    res |= check_file(config, iter->first, iter->second, pretend, force, false);
+    res |= check_file(config, iter->first, iter->second.first,
+                      iter->second.second, pretend, force, false);
   }
   return res;
 }
@@ -329,10 +350,11 @@ void initialize_output_directories::tracking_files::copy_trackers(
   suffixes.push_back(get_phenotype_dataset_suffix());
   suffixes.push_back(get_phenotype_suffix());
   suffixes.push_back(get_covariates_suffix());
-  for (std::map<std::string, std::string>::const_iterator iter =
+  for (std::map<std::string,
+                std::pair<std::string, std::string> >::const_iterator iter =
            _general_extensions.begin();
        iter != _general_extensions.end(); ++iter) {
-    suffixes.push_back(iter->second);
+    suffixes.push_back(iter->second.first);
   }
   // for each suffix, test to see if the source file exists; if so, copy to
   // target
