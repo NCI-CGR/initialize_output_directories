@@ -54,6 +54,12 @@ class yaml_reader {
   }
   std::vector<std::pair<std::string, std::string> > get_map(
       const std::vector<std::string> &queries) const;
+  YAML::Node get_node(const std::string &query) const {
+    std::vector<std::string> queries;
+    queries.push_back(query);
+    return get_node(queries);
+  }
+  YAML::Node get_node(const std::vector<std::string> &queries) const;
   bool query_valid(const std::string &query) const {
     std::vector<std::string> queries;
     queries.push_back(query);

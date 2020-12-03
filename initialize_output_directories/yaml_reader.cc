@@ -34,6 +34,13 @@ initialize_output_directories::yaml_reader::get_sequence(
   return res;
 }
 
+YAML::Node initialize_output_directories::yaml_reader::get_node(
+    const std::vector<std::string> &queries) const {
+  YAML::Node current = YAML::Clone(_data), next;
+  apply_queries(queries, &current, &next);
+  return current;
+}
+
 std::vector<std::pair<std::string, std::string> >
 initialize_output_directories::yaml_reader::get_map(
     const std::vector<std::string> &queries) const {
