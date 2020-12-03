@@ -5,6 +5,7 @@
   Copyright 2020 Cameron Palmer.
  */
 
+#include <chrono>  // NOLINT [build/c++11]
 #include <iostream>
 #include <stdexcept>
 
@@ -34,6 +35,14 @@ int main(int argc, char **argv) {
   bool pretend = ap.pretend();
   bool force = ap.force();
   bool debug = ap.debug();
+  bool timer = ap.timer();
+
+  std::chrono::time_point<std::chrono::high_resolution_clock> start_time,
+      end_time;
+  if (timer) {
+    start_time = std::chrono::high_resolution_clock::now();
+  }
+
   // read configuration files
   initialize_output_directories::yaml_reader pheno_config(
       phenotype_config_filename);
@@ -59,6 +68,7 @@ int main(int argc, char **argv) {
     //    a single meta-group
     mm.load_data(phenotype_database);
     categories = mm.categorize(pheno_config.get_entry("phenotype"));
+    if (debug) mm.write("tmp.model_matrix");
   }
   // for each chip
   for (std::vector<std::string>::const_iterator chip = chips.begin();
@@ -138,6 +148,14 @@ int main(int argc, char **argv) {
         }
       }
     }
+  }
+  if (timer) {
+    end_time = std::chrono::high_resolution_clock::now();
+    std::chrono::duration elapsed =
+        std::chrono::duration_cast<std::chrono::milliseconds>(end_time -
+                                                              start_time);
+    std::cout << "Time taken by run: " << elapsed.count() << " milliseconds"
+              << std::endl;
   }
   return 0;
 }

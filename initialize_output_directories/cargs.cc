@@ -28,5 +28,6 @@ void initialize_output_directories::cargs::initialize_options() {
       "software,s", boost::program_options::value<std::string>(),
       "requested software (e.g. SAIGE, BOLTLMM)")(
       "software-min-sample-size,N", boost::program_options::value<unsigned>(),
-      "minimum heuristic sample size for software");
+      "minimum heuristic sample size for software")(
+      "timer,t", "emit elapsed runtime at end of program execution");
 }

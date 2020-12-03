@@ -95,6 +95,17 @@ class cargs {
   bool debug() const { return compute_flag("debug"); }
 
   /*!
+    \brief determine whether the run should be timed
+    \return whether the run should be timed
+
+    Almost all of this program is super fast, but one step, processing
+    the phenotype database, can be comparatively slow. to ease the
+    comparison of different implementations, this flag will turn on
+    an internal timer that will report the elapsed runtime.
+   */
+  bool timer() const { return compute_flag("timer"); }
+
+  /*!
     \brief get the user-specified phenotype configuration file
     \return the user-specified phenotype configuration file
 

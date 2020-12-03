@@ -9,13 +9,12 @@
 
 void initialize_output_directories::model_matrix::load_data(
     const std::string &filename) {
-  std::ifstream input;
+  // https://stackoverflow.com/questions/17925051/fast-textfile-reading-in-c
+  boost::iostreams::mapped_file input(filename.c_str(),
+                                      boost::iostreams::mapped_file::readonly);
+  const char *f = input.const_data(), *f_next = 0;
+  const char *l = f + input.size();
   std::string line = "", catcher = "";
-  input.open(filename.c_str());
-  if (!input.is_open())
-    throw std::runtime_error("unable to open phenotype file \"" + filename +
-                             "\"");
-  getline(input, line);
   std::map<std::string, bool> targets;
   targets[get_phenotype()] = true;
   for (std::vector<std::string>::const_iterator iter = get_covariates().begin();
@@ -23,37 +22,83 @@ void initialize_output_directories::model_matrix::load_data(
     targets[*iter] = true;
   }
   std::vector<bool> include_column;
-  unsigned id_colnum = 0;
-  std::istringstream strm1(line);
+  unsigned id_colnum = 0, nfound = 0;
   _headers.clear();
-  while (strm1 >> catcher) {
-    include_column.push_back(targets.find(catcher) != targets.end());
-    if (*include_column.rbegin()) _headers.push_back(catcher);
-    if (!catcher.compare(get_id())) {
-      id_colnum = include_column.size() - 1;
-    }
-  }
   _ids.clear();
-  _data.clear();
-  _data.resize(1 + get_covariates().size());
-  while (input.peek() != EOF) {
-    getline(input, line);
+  if ((f_next = static_cast<const char *>(memchr(f, '\n', l - f)))) {
+    line = std::string(f, f_next - f);
     std::istringstream strm1(line);
-    unsigned nfound = 0;
+    while (strm1 >> catcher) {
+      include_column.push_back(targets.find(catcher) != targets.end());
+      if (targets.find(catcher) != targets.end()) ++nfound;
+      if (*include_column.rbegin()) _headers.push_back(catcher);
+      if (!catcher.compare(get_id())) {
+        id_colnum = include_column.size() - 1;
+      }
+    }
+    f = f_next + 1;
+  } else {
+    throw std::runtime_error("no header in phenotype file \"" + filename +
+                             "\"");
+  }
+  _data.clear();
+  _data.resize(nfound);
+  while (f && f != l) {
+    nfound = 0;
     for (unsigned i = 0; i < include_column.size(); ++i) {
-      if (!(strm1 >> catcher))
-        throw std::runtime_error(
-            "header/line token count mismatch for line \"" + line + "\"");
-      if (i == id_colnum) {
-        _ids.push_back(catcher);
+      if (!f || f == l) {
+        throw std::runtime_error("ran out of tokens for phenotype file \"" +
+                                 filename + "\"");
       }
-      if (include_column.at(i)) {
-        _data.at(nfound).push_back(catcher);
-        ++nfound;
+      if ((f_next = static_cast<const char *>(memchr(
+               f, (i == include_column.size() - 1 ? '\n' : '\t'), l - f)))) {
+        if (i == id_colnum) {
+          catcher = std::string(f, f_next - f);
+          _ids.push_back(catcher);
+        }
+        if (include_column.at(i)) {
+          catcher = std::string(f, f_next - f);
+          _data.at(nfound).push_back(catcher);
+          ++nfound;
+        }
+      } else {
+        throw std::runtime_error("insufficient tokens in phenotype file \"" +
+                                 filename + "\"");
       }
+      f = f_next + 1;
     }
   }
   input.close();
+}
+
+void initialize_output_directories::model_matrix::write(
+    const std::string &filename) const {
+  std::ofstream output;
+  output.open(filename.c_str());
+  if (!output.is_open())
+    throw std::runtime_error("cannot write model_matrix file \"" + filename +
+                             "\"");
+  output << get_id();
+  for (std::vector<std::string>::const_iterator iter = _headers.begin();
+       iter != _headers.end(); ++iter) {
+    output << '\t' << *iter;
+  }
+  output << std::endl;
+  for (unsigned i = 0; i < _data.size(); ++i) {
+    if (_ids.size() != _data.at(i).size())
+      throw std::runtime_error(
+          "jagged model matrix: " + std::to_string(_ids.size()) +
+          " (ids) versus " + std::to_string(_data.at(i).size()) + " (" +
+          std::to_string(i) + ")");
+  }
+  for (unsigned i = 0; i < _data.at(0).size(); ++i) {
+    output << _ids.at(i);
+    for (unsigned j = 0; j < _data.size(); ++j) {
+      output << '\t' << _data.at(j).at(i);
+    }
+    output << std::endl;
+  }
+  output.close();
 }
 
 initialize_output_directories::categorical_variable

@@ -8,6 +8,7 @@
 #define INITIALIZE_OUTPUT_DIRECTORIES_TRACKING_FILES_H_
 
 #include <algorithm>
+#include <cstring>
 #include <fstream>
 #include <iostream>
 #include <map>
@@ -19,6 +20,7 @@
 #include <vector>
 
 #include "boost/filesystem.hpp"
+#include "boost/iostreams/device/mapped_file.hpp"
 #include "initialize_output_directories/yaml_reader.h"
 #include "yaml-cpp/yaml.h"
 
@@ -130,6 +132,8 @@ class model_matrix {
   bool empty() const {
     return _headers.empty() && _ids.empty() && _data.empty();
   }
+
+  void write(const std::string &filename) const;
 
  private:
   std::string _id;
