@@ -328,7 +328,7 @@ void initialize_output_directories::tracking_files::update_tracker(
     throw std::runtime_error("cannot write tracking file \"" + filename + "\"");
   for (std::vector<std::string>::const_iterator iter = vec.begin();
        iter != vec.end(); ++iter) {
-    if (!(output << *iter))
+    if (!(output << *iter << std::endl))
       throw std::runtime_error("cannot write entry to tracking file \"" +
                                filename + "\"");
   }
