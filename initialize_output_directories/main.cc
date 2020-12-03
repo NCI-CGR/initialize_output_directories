@@ -75,10 +75,6 @@ int main(int argc, char **argv) {
           *ancestry;
       std::string bgen_samplefile =
           bgen_directory + "/chr22-filtered-noNAs.sample";
-      std::cout << "bgen directory is \"" << bgen_directory << "\""
-                << std::endl;
-      std::cout << "bgen samplefile is \"" << bgen_samplefile << "\""
-                << std::endl;
       boost::filesystem::path bgen_dir_path = bgen_directory;
       boost::filesystem::path bgen_sample_path = bgen_samplefile;
       if (initialize_output_directories::find_entry(software, algorithms) &&
@@ -142,11 +138,5 @@ int main(int argc, char **argv) {
       }
     }
   }
-
-  // once all of this is done, echo analysis prefixes for all valid targets;
-  // basically,
-  //    the directories that would be written to.
-
-  std::cout << "all done" << std::endl;
   return 0;
 }
