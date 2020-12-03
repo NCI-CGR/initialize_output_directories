@@ -372,6 +372,27 @@ void initialize_output_directories::tracking_files::copy_trackers(
        iter != suffixes.end(); ++iter) {
     if (boost::filesystem::is_regular_file(
             boost::filesystem::path(get_output_prefix() + *iter))) {
+      // test whether the target already exists
+      if (boost::filesystem::is_regular_file(
+              boost::filesystem::path(target_prefix + *iter))) {
+        // if the contents of source and target are identical, do nothing
+        std::ifstream in1, in2;
+        std::string line1 = "", line2 = "";
+        in1.open((get_output_prefix() + *iter).c_str());
+        in2.open((target_prefix + *iter).c_str());
+        while (in1.peek() != EOF && in2.peek() != EOF &&
+               !line1.compare(line2)) {
+          getline(in1, line1);
+          getline(in2, line2);
+        }
+        if (!line1.compare(line2) && in1.peek() == EOF && in2.peek() == EOF) {
+          // files are the same
+          continue;
+        }
+        // delete the target file so boost::filesystem::copy works without issue
+        boost::filesystem::remove(
+            boost::filesystem::path(target_prefix + *iter));
+      }
       boost::filesystem::copy(
           boost::filesystem::path(get_output_prefix() + *iter),
           boost::filesystem::path(target_prefix + *iter));
