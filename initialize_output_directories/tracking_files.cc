@@ -326,12 +326,22 @@ void initialize_output_directories::tracking_files::update_tracker(
               append ? std::ios_base::app : std::ios_base::out);
   if (!output.is_open())
     throw std::runtime_error("cannot write tracking file \"" + filename + "\"");
+  unsigned counter = 0;
   for (std::vector<std::string>::const_iterator iter = vec.begin();
-       iter != vec.end(); ++iter) {
-    if (!(output << *iter << std::endl))
+       iter != vec.end(); ++iter, ++counter) {
+    if (!(output << *iter))
       throw std::runtime_error("cannot write entry to tracking file \"" +
                                filename + "\"");
+    if (counter < vec.size() - 1) {
+      if (!(output << ','))
+        throw std::runtime_error(
+            "cannot write comma delimiter to tracking file \"" + filename +
+            "\"");
+    }
   }
+  if (!(output << std::endl))
+    throw std::runtime_error("cannot write newline to tracking file \"" +
+                             filename + "\"");
   output.close();
 }
 
@@ -376,17 +386,23 @@ void initialize_output_directories::tracking_files::copy_trackers(
   // requires a downstream change in ./shared-source/construct_model_matrix.R,
   // but that needs rewriting from scratch anyway. that may be the next issue to
   // address.
+  // formatting is a bit wonky here, as most of the trackers are reporting
+  // comma-delimited lists, but this is traditionally one token per line,
+  // now extended to two tokens per line. so this code now slightly hacks
+  // the behavior of update_tracker to support arbitrary line formatting.
   std::vector<std::string> category_tracker_data;
+  std::ostringstream o;
   for (std::set<unsigned>::const_iterator iter = reference.begin();
        iter != reference.end(); ++iter) {
-    std::string report_value = *iter + "\treference";
-    category_tracker_data.push_back(report_value);
+    o << *iter << "\treference\n";
   }
+  unsigned counter = 0;
   for (std::set<unsigned>::const_iterator iter = comparison.begin();
-       iter != comparison.end(); ++iter) {
-    std::string report_value = *iter + "\tcomparison";
-    category_tracker_data.push_back(report_value);
+       iter != comparison.end(); ++iter, ++counter) {
+    o << *iter << "\tcomparison";
+    if (counter < comparison.size() - 1) o << '\n';
   }
+  category_tracker_data.push_back(o.str());
   update_tracker(target_prefix + get_categories_suffix(), category_tracker_data,
                  false);
 }
