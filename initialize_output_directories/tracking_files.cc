@@ -196,17 +196,21 @@ bool initialize_output_directories::tracking_files::check_file(
   if (!input.is_open())
     throw std::runtime_error("cannot open \"" + tag + "\" tracking file \"" +
                              filename + "\"");
-  unsigned counter = 0;
-  bool needs_update = false;
-  while (input.peek() != EOF && !needs_update) {
+  // for esoteric reasons, need to be careful about how this is computed.
+  // acquire the (guaranteed very small) file contents into a single string;
+  // do the same for the new values; compare those
+  std::ostringstream existing_data, new_data;
+  while (input.peek() != EOF) {
     getline(input, line);
-    if (values.size() <= counter || values.at(counter).compare(line)) {
-      needs_update = true;
-    }
-    ++counter;
+    existing_data << line << std::endl;
   }
   input.close();
-  if (needs_update || counter != values.size()) {
+  for (std::vector<std::string>::const_iterator iter = values.begin();
+       iter != values.end(); ++iter) {
+    new_data << (iter == values.begin() ? "" : ",") << *iter;
+  }
+  new_data << std::endl;
+  if (existing_data.str().compare(new_data.str())) {
     update_tracker(filename, values, false);
     return true;
   }
