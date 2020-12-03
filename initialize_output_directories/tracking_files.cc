@@ -352,7 +352,7 @@ void initialize_output_directories::tracking_files::copy_trackers(
       get_output_prefix().substr(get_output_prefix().rfind("/") + 1);
   std::string target_dir =
       get_output_prefix().substr(0, get_output_prefix().rfind("/")) +
-      "comparison" + std::to_string(comparison_number);
+      "/comparison" + std::to_string(comparison_number);
   std::string target_prefix = target_dir + "/" + file_prefix;
   boost::filesystem::create_directories(boost::filesystem::path(target_dir));
   // acquire suffixes of copyable files

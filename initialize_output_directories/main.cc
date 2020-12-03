@@ -129,7 +129,8 @@ int main(int argc, char **argv) {
             // as an analysis target, and just emit the comparison
             // subdirectories
             for (unsigned i = 1; i <= categories.n_comparison_groups(); ++i) {
-              std::cout << results_prefix << "/comparison" << i << std::endl;
+              std::cout << results_prefix.substr(0, results_prefix.rfind("/"))
+                        << "/comparison" << i << std::endl;
             }
           } else {
             std::cout << results_prefix << std::endl;
