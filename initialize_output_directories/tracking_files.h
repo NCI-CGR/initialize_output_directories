@@ -176,7 +176,8 @@ class tracking_files {
                    const std::string &phenotype_filename, bool pretend,
                    bool force) const;
   bool check_file(const yaml_reader &config, const std::string &tag,
-                  const std::string &suffix, bool pretend, bool force) const;
+                  const std::string &suffix, bool pretend, bool force,
+                  bool must_exist) const;
   void remove_finalization() const;
   void copy_trackers(unsigned comparison_number,
                      const std::set<unsigned> &reference,

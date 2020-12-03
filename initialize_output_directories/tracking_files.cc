@@ -119,7 +119,6 @@ void initialize_output_directories::tracking_files::initialize(
   // create the target directory if needed
   std::string target_dir =
       get_output_prefix().substr(0, get_output_prefix().rfind("/"));
-  std::cout << "initialize target dir is \"" << target_dir << "\"" << std::endl;
   boost::filesystem::path target_dir_path = target_dir;
   boost::filesystem::create_directories(target_dir_path);
   // pull the required presets from this extension configuration
@@ -147,12 +146,29 @@ void initialize_output_directories::tracking_files::initialize(
 
 bool initialize_output_directories::tracking_files::check_file(
     const yaml_reader &config, const std::string &tag,
-    const std::string &suffix, bool pretend, bool force) const {
+    const std::string &suffix, bool pretend, bool force,
+    bool must_exist) const {
   if (pretend) return false;
   std::string line = "";
   std::vector<std::string> values;
-  values = config.get_sequence(tag);
   std::string filename = get_output_prefix() + suffix;
+  // weird corner case: current config doesn't have entry but previous run did
+  if (!config.query_valid(tag)) {
+    if (must_exist)
+      throw std::runtime_error("check_file: essential tag \"" + tag +
+                               "\" not found "
+                               "in configuration for analysis \"" +
+                               get_output_prefix() + "\"");
+    if (boost::filesystem::is_regular_file(boost::filesystem::path(filename))) {
+      // file was previously written but needs to be purged now
+      boost::filesystem::remove(boost::filesystem::path(filename));
+      // signal a rerun, alas
+      return true;
+    }
+    // file isn't present, which is consistent; no update required
+    return false;
+  }
+  values = config.get_sequence(tag);
   if (!boost::filesystem::is_regular_file(boost::filesystem::path(filename))) {
     update_tracker(filename, values, false);
     return true;
@@ -263,14 +279,14 @@ bool initialize_output_directories::tracking_files::check_files(
     const std::string &phenotype_filename, bool pretend, bool force) const {
   bool res = check_phenotype_database(config, input_model, phenotype_filename,
                                       pretend, force);
-  res |=
-      check_file(config, "phenotype", get_phenotype_suffix(), pretend, force);
-  res |=
-      check_file(config, "covariates", get_covariates_suffix(), pretend, force);
+  res |= check_file(config, "phenotype", get_phenotype_suffix(), pretend, force,
+                    true);
+  res |= check_file(config, "covariates", get_covariates_suffix(), pretend,
+                    force, false);
   for (std::map<std::string, std::string>::const_iterator iter =
            _general_extensions.begin();
        iter != _general_extensions.end(); ++iter) {
-    res |= check_file(config, iter->first, iter->second, pretend, force);
+    res |= check_file(config, iter->first, iter->second, pretend, force, false);
   }
   return res;
 }
