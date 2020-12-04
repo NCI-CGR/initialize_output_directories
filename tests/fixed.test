@@ -1,0 +1,32 @@
+#!/bin/bash
+PROGRAM_NAME=./initialize_output_directories.out
+EXTENSION_CONFIG=./extensions.config.yaml
+PHENOTYPE_DATABASE=/CGF/GWAS/Scans/PLCO/builds/1/plco-analysis/phenotypes/v10/atlas_v10.with_na.augmented.02nov2020.tsv
+BGEN_DIR=/CGF/GWAS/Scans/PLCO/builds/1/plco-analysis/bgen
+FIXED_RESULTS=tests/fixed_runs
+rm -Rf "$FIXED_RESULTS"
+"$PROGRAM_NAME" -e "$EXTENSION_CONFIG" -p tests/BMI.config.yaml -D "$PHENOTYPE_DATABASE" -I plco_id -b "$BGEN_DIR" -r "$FIXED_RESULTS" -s boltlmm -N 1 > /dev/null
+"$PROGRAM_NAME" -e "$EXTENSION_CONFIG" -p tests/panc_cancer.female.config.yaml -D "$PHENOTYPE_DATABASE" -I plco_id -b "$BGEN_DIR" -r "$FIXED_RESULTS" -s saige -N 1 > /dev/null
+#"$PROGRAM_NAME" -e "$EXTENSION_CONFIG" -p balding_trend.config.yaml -D "$PHENOTYPE_DATABASE" -I plco_id -b "$BGEN_DIR" -r "$FIXED_RESULTS" -s saige -N 1 > /dev/null
+for file in `find tests/fixed_examples -name "*" -type f -print`;
+do
+    suffix=`echo $file | sed 's/tests\/fixed_examples\///'`
+    if [[ ! -f "$FIXED_RESULTS/$suffix" ]] ; then
+	echo "not ok - $suffix missing from $PROGRAM_NAME output"
+    else
+	file_diff=`diff $file "$FIXED_RESULTS/$suffix" | wc -l`
+	if [[ "$file_diff" -ne "0" ]] ; then
+	    echo "not ok - $suffix differs from expected $PROGRAM_NAME output"
+	else
+	    echo "ok - $suffix"
+	fi
+    fi
+done
+for file in `find $FIXED_RESULTS -name "*" -type f -print`;
+do
+    suffix=`echo $file | sed 's/tests\/fixed_runs\///'`
+    if [[ ! -f "tests/fixed_examples/$suffix" ]] ; then
+	echo "not ok - $suffix in $PROGRAM_NAME output missing from fixed expected output"
+    fi
+done
+echo 1..`find tests/fixed_runs tests/fixed_examples -name "*" -type f -print | sed 's/tests\/fixed_runs\/// ; s/tests\/fixed_examples\///' | awk '{print $NF}' | sort | uniq | wc -l`

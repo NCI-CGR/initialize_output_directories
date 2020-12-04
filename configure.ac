@@ -4,6 +4,7 @@
 AC_PREREQ([2.69])
 AC_INIT(initialize_output_directories, 1.0, palmercd@nih.gov)
 AC_CONFIG_AUX_DIR([.])
+AC_REQUIRE_AUX_FILE([tap-driver.sh])
 AM_INIT_AUTOMAKE([-Wall -Werror subdir-objects])
 AM_SILENT_RULES([yes])
 AM_PROG_AR
