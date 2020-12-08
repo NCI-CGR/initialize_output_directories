@@ -7,7 +7,7 @@ FIXED_RESULTS=tests/fixed_runs
 rm -Rf "$FIXED_RESULTS"
 "$PROGRAM_NAME" -e "$EXTENSION_CONFIG" -p tests/BMI.config.yaml -D "$PHENOTYPE_DATABASE" -I plco_id -b "$BGEN_DIR" -r "$FIXED_RESULTS" -s boltlmm -N 1 > /dev/null
 "$PROGRAM_NAME" -e "$EXTENSION_CONFIG" -p tests/panc_cancer.female.config.yaml -D "$PHENOTYPE_DATABASE" -I plco_id -b "$BGEN_DIR" -r "$FIXED_RESULTS" -s saige -N 1 > /dev/null
-#"$PROGRAM_NAME" -e "$EXTENSION_CONFIG" -p balding_trend.config.yaml -D "$PHENOTYPE_DATABASE" -I plco_id -b "$BGEN_DIR" -r "$FIXED_RESULTS" -s saige -N 1 > /dev/null
+"$PROGRAM_NAME" -e "$EXTENSION_CONFIG" -p tests/balding_trend.config.yaml -D "$PHENOTYPE_DATABASE" -I plco_id -b "$BGEN_DIR" -r "$FIXED_RESULTS" -s saige -N 1 > /dev/null
 for file in `find tests/fixed_examples -name "*" -type f -print`;
 do
     suffix=`echo $file | sed 's/tests\/fixed_examples\///'`
