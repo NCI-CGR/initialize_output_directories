@@ -144,6 +144,37 @@ class model_matrix {
   std::vector<std::vector<std::string> > _data;
 };
 
+class extension_definition {
+ public:
+  extension_definition() : _name(""), _extension(""), _default("") {}
+  extension_definition(const extension_definition &obj)
+      : _name(obj._name),
+        _extension(obj._extension),
+        _default(obj._default),
+        _permitted_values(obj._permitted_values) {}
+  ~extension_definition() throw() {}
+
+  void set_name(const std::string &s) { _name = s; }
+  const std::string &get_name() const { return _name; }
+  void set_extension(const std::string &s) { _extension = s; }
+  const std::string &get_extension() const { return _extension; }
+  void set_default(const std::string &s) { _default = s; }
+  const std::string &get_default() const { return _default; }
+  void add_permitted_value(const std::string &s) {
+    _permitted_values[s] = true;
+  }
+  bool is_permitted_value(const std::string &s) const {
+    return _permitted_values.find(s) != _permitted_values.end() ||
+           _permitted_values.empty();
+  }
+
+ private:
+  std::string _name;
+  std::string _extension;
+  std::string _default;
+  std::map<std::string, bool> _permitted_values;
+};
+
 class tracking_files {
  public:
   tracking_files()
@@ -180,8 +211,7 @@ class tracking_files {
   bool check_files(const yaml_reader &config, const model_matrix &input_model,
                    const std::string &phenotype_filename, bool pretend,
                    bool force) const;
-  bool check_file(const yaml_reader &config, const std::string &tag,
-                  const std::string &suffix, const std::string &value_default,
+  bool check_file(const yaml_reader &config, const extension_definition &edef,
                   bool pretend, bool force, bool must_exist) const;
   void remove_finalization() const;
   void copy_trackers(unsigned comparison_number,
@@ -211,8 +241,7 @@ class tracking_files {
   std::string _covariates_suffix;
   std::string _categories_suffix;
   std::string _finalized_suffix;
-  std::map<std::string, std::pair<std::string, std::string> >
-      _general_extensions;
+  std::map<std::string, extension_definition> _general_extensions;
 };
 }  // namespace initialize_output_directories
 

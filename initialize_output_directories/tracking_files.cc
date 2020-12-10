@@ -188,13 +188,45 @@ void initialize_output_directories::tracking_files::initialize(
         "initialize: extensions config entry 'general-extensions'"
         " is supposed to be a YAML Map, but is not :(");
   }
+  std::string observed_name = "", observed_suffix = "", observed_default = "",
+              observed_option = "";
   for (YAML::const_iterator iter = data.begin(); iter != data.end(); ++iter) {
     if (iter->second["suffix"] && iter->second["default"]) {
       if (iter->second["suffix"].IsScalar() &&
           iter->second["default"].IsScalar()) {
-        _general_extensions[iter->first.as<std::string>()] =
-            std::make_pair(iter->second["suffix"].as<std::string>(),
-                           iter->second["default"].as<std::string>());
+        extension_definition edef;
+        observed_name = iter->first.as<std::string>();
+        observed_suffix = iter->second["suffix"].as<std::string>();
+        observed_default = iter->second["default"].as<std::string>();
+        edef.set_name(observed_name);
+        edef.set_extension(observed_suffix);
+        edef.set_default(observed_default);
+        // there is an optional "options" section that contains the predefined
+        // permitted values for this extension tracker
+        if (iter->second["options"]) {
+          std::vector<std::string> extension_options;
+          if (iter->second["options"].Type() == YAML::NodeType::Scalar) {
+            observed_option = iter->second["options"].as<std::string>();
+            edef.add_permitted_value(observed_option);
+          } else if (iter->second["options"].Type() ==
+                     YAML::NodeType::Sequence) {
+            for (YAML::const_iterator options_iter =
+                     iter->second["options"].begin();
+                 options_iter != iter->second["options"].end();
+                 ++options_iter) {
+              observed_option = options_iter->as<std::string>();
+              edef.add_permitted_value(observed_option);
+            }
+          } else {
+            throw std::runtime_error(
+                "initialize: extensions config entry 'general-extensions'"
+                " key '" +
+                observed_name +
+                "' section 'options' contains "
+                "invalid data type (likely a Map which is not supported");
+          }
+        }
+        _general_extensions[iter->first.as<std::string>()] = edef;
       } else {
         throw std::runtime_error(
             "initialize: extensions config entry 'general-extensions'"
@@ -215,9 +247,11 @@ void initialize_output_directories::tracking_files::initialize(
 }
 
 bool initialize_output_directories::tracking_files::check_file(
-    const yaml_reader &config, const std::string &tag,
-    const std::string &suffix, const std::string &value_default, bool pretend,
+    const yaml_reader &config, const extension_definition &edef, bool pretend,
     bool force, bool must_exist) const {
+  std::string tag = edef.get_name();
+  std::string suffix = edef.get_extension();
+  std::string value_default = edef.get_default();
   if (pretend) return false;
   std::string line = "";
   std::vector<std::string> values;
@@ -232,6 +266,15 @@ bool initialize_output_directories::tracking_files::check_file(
     values.push_back(value_default);
   } else {
     values = config.get_sequence(tag);
+  }
+  // confirm that all entries in "values" are valid options for this tracker
+  for (std::vector<std::string>::const_iterator iter = values.begin();
+       iter != values.end(); ++iter) {
+    if (!edef.is_permitted_value(*iter)) {
+      throw std::runtime_error("check_file: tracker '" + tag + "' value '" +
+                               *iter +
+                               "' not among permitted values for this tracker");
+    }
   }
   if (!boost::filesystem::is_regular_file(boost::filesystem::path(filename))) {
     update_tracker(filename, values, false);
@@ -347,16 +390,18 @@ bool initialize_output_directories::tracking_files::check_files(
     const std::string &phenotype_filename, bool pretend, bool force) const {
   bool res = check_phenotype_database(config, input_model, phenotype_filename,
                                       pretend, force);
-  res |= check_file(config, "phenotype", get_phenotype_suffix(), "", pretend,
-                    force, true);
-  res |= check_file(config, "covariates", get_covariates_suffix(), "", pretend,
-                    force, false);
-  for (std::map<std::string,
-                std::pair<std::string, std::string> >::const_iterator iter =
+  extension_definition extension_pheno;
+  extension_pheno.set_name("phenotype");
+  extension_pheno.set_extension(get_phenotype_suffix());
+  res |= check_file(config, extension_pheno, pretend, force, true);
+  extension_definition extension_covar;
+  extension_covar.set_name("covariates");
+  extension_covar.set_extension(get_covariates_suffix());
+  res |= check_file(config, extension_covar, pretend, force, false);
+  for (std::map<std::string, extension_definition>::const_iterator iter =
            _general_extensions.begin();
        iter != _general_extensions.end(); ++iter) {
-    res |= check_file(config, iter->first, iter->second.first,
-                      iter->second.second, pretend, force, false);
+    res |= check_file(config, iter->second, pretend, force, false);
   }
   return res;
 }
@@ -409,11 +454,10 @@ void initialize_output_directories::tracking_files::copy_trackers(
   suffixes.push_back(get_phenotype_dataset_suffix());
   suffixes.push_back(get_phenotype_suffix());
   suffixes.push_back(get_covariates_suffix());
-  for (std::map<std::string,
-                std::pair<std::string, std::string> >::const_iterator iter =
+  for (std::map<std::string, extension_definition>::const_iterator iter =
            _general_extensions.begin();
        iter != _general_extensions.end(); ++iter) {
-    suffixes.push_back(iter->second.first);
+    suffixes.push_back(iter->second.get_extension());
   }
   // for each suffix, test to see if the source file exists; if so, copy to
   // target
