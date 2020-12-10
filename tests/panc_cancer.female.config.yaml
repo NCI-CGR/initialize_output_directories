@@ -37,6 +37,6 @@ algorithm:
 sex-specific: female
 id_mode: rsid
 control_inclusion:
-  - clean_control
+  clean_control: 1
 control_exclusion:
-  - j_breast_cancer
+  j_breast_cancer: 1
