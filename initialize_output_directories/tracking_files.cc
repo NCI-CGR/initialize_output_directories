@@ -255,6 +255,7 @@ bool initialize_output_directories::tracking_files::check_file(
   if (pretend) return false;
   std::string line = "";
   std::vector<std::string> values;
+  std::map<std::string, std::string> mapped_values;
   std::string filename = get_output_prefix() + suffix;
   // weird corner case: current config doesn't have entry but previous run did
   if (!config.query_valid(tag)) {
@@ -265,9 +266,30 @@ bool initialize_output_directories::tracking_files::check_file(
                                get_output_prefix() + "\"");
     values.push_back(value_default);
   } else {
-    values = config.get_sequence(tag);
+    YAML::Node head = config.get_node(tag);
+    if (head.Type() == YAML::NodeType::Scalar) {
+      values.push_back(head.as<std::string>());
+    } else if (head.Type() == YAML::NodeType::Sequence) {
+      for (YAML::const_iterator iter = head.begin(); iter != head.end();
+           ++iter) {
+        values.push_back(iter->as<std::string>());
+      }
+    } else if (head.Type() == YAML::NodeType::Map) {
+      for (YAML::const_iterator iter = head.begin(); iter != head.end();
+           ++iter) {
+        mapped_values[iter->first.as<std::string>()] =
+            iter->second.as<std::string>();
+      }
+    } else {
+      throw std::runtime_error("check_file: tracker '" + tag +
+                               "' entry "
+                               "type not recognized");
+    }
   }
   // confirm that all entries in "values" are valid options for this tracker
+  // currently only enabled for sequence-type input; map type input is targeted
+  // at variable names, which won't ever be enumerated at config level,
+  // hopefully?
   for (std::vector<std::string>::const_iterator iter = values.begin();
        iter != values.end(); ++iter) {
     if (!edef.is_permitted_value(*iter)) {
@@ -277,7 +299,11 @@ bool initialize_output_directories::tracking_files::check_file(
     }
   }
   if (!boost::filesystem::is_regular_file(boost::filesystem::path(filename))) {
-    update_tracker(filename, values, false);
+    if (values.empty()) {
+      update_tracker(filename, mapped_values, false);
+    } else {
+      update_tracker(filename, values, false);
+    }
     return true;
   }
   std::ifstream input(filename.c_str());
@@ -293,13 +319,26 @@ bool initialize_output_directories::tracking_files::check_file(
     existing_data << line << std::endl;
   }
   input.close();
-  for (std::vector<std::string>::const_iterator iter = values.begin();
-       iter != values.end(); ++iter) {
-    new_data << (iter == values.begin() ? "" : ",") << *iter;
+  if (values.empty()) {
+    for (std::map<std::string, std::string>::const_iterator iter =
+             mapped_values.begin();
+         iter != mapped_values.end(); ++iter) {
+      new_data << (iter == mapped_values.begin() ? "" : ",") << iter->first
+               << '\t' << iter->second;
+    }
+  } else {
+    for (std::vector<std::string>::const_iterator iter = values.begin();
+         iter != values.end(); ++iter) {
+      new_data << (iter == values.begin() ? "" : ",") << *iter;
+    }
   }
   new_data << std::endl;
   if (existing_data.str().compare(new_data.str())) {
-    update_tracker(filename, values, false);
+    if (values.empty()) {
+      update_tracker(filename, mapped_values, false);
+    } else {
+      update_tracker(filename, values, false);
+    }
     return true;
   }
   return false;
@@ -436,6 +475,23 @@ void initialize_output_directories::tracking_files::update_tracker(
   if (!(output << std::endl))
     throw std::runtime_error("cannot write newline to tracking file \"" +
                              filename + "\"");
+  output.close();
+}
+
+void initialize_output_directories::tracking_files::update_tracker(
+    const std::string &filename,
+    const std::map<std::string, std::string> &values, bool append) const {
+  std::ofstream output;
+  output.open(filename.c_str(),
+              append ? std::ios_base::app : std::ios_base::out);
+  if (!output.is_open())
+    throw std::runtime_error("cannot write tracking file \"" + filename + "\"");
+  for (std::map<std::string, std::string>::const_iterator iter = values.begin();
+       iter != values.end(); ++iter) {
+    if (!(output << iter->first << '\t' << iter->second << std::endl))
+      throw std::runtime_error("cannot write entry to tracking file \"" +
+                               filename + "\"");
+  }
   output.close();
 }
 

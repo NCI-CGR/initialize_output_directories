@@ -233,6 +233,9 @@ class tracking_files {
   const std::string &get_finalized_suffix() const { return _finalized_suffix; }
   void update_tracker(const std::string &filename,
                       const std::vector<std::string> &vec, bool append) const;
+  void update_tracker(const std::string &filename,
+                      const std::map<std::string, std::string> &values,
+                      bool append) const;
 
  private:
   std::string _output_prefix;
