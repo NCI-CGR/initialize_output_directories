@@ -217,6 +217,10 @@ class tracking_files {
   void copy_trackers(unsigned comparison_number,
                      const std::set<unsigned> &reference,
                      const std::set<unsigned> &comparison) const;
+  void report_categories(const std::string &target_prefix,
+                         const std::set<unsigned> &reference,
+                         const std::set<unsigned> &comparison) const;
+  const std::string &get_output_prefix() const { return _output_prefix; }
 
  protected:
   const std::string &get_phenotype_dataset_suffix() const {
@@ -229,7 +233,6 @@ class tracking_files {
   const std::string &get_categories_suffix() const {
     return _categories_suffix;
   }
-  const std::string &get_output_prefix() const { return _output_prefix; }
   const std::string &get_finalized_suffix() const { return _finalized_suffix; }
   void update_tracker(const std::string &filename,
                       const std::vector<std::string> &vec, bool append) const;

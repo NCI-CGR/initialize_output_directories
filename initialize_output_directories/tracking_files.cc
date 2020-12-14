@@ -547,6 +547,12 @@ void initialize_output_directories::tracking_files::copy_trackers(
           boost::filesystem::path(target_prefix + *iter));
     }
   }
+  report_categories(target_prefix, reference, comparison);
+}
+
+void initialize_output_directories::tracking_files::report_categories(
+    const std::string &target_prefix, const std::set<unsigned> &reference,
+    const std::set<unsigned> &comparison) const {
   // only for the comparison level tracker: emit the comparison level
   // information I'm still not really convinced what to do about these levels.
   // this version is a modification from the old code in that it reports

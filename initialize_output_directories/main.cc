@@ -131,6 +131,10 @@ int main(int argc, char **argv) {
                 tf.copy_trackers(comparison_count,
                                  categories.get_reference_group(), *iter);
               }
+            } else if (categories.size() == 2) {
+              tf.report_categories(tf.get_output_prefix(),
+                                   categories.get_reference_group(),
+                                   *categories.comparison_begin());
             }
           }
           // actually emit output prefixes as appropriate
@@ -140,7 +144,9 @@ int main(int argc, char **argv) {
             // subdirectories
             for (unsigned i = 1; i <= categories.n_comparison_groups(); ++i) {
               std::cout << results_prefix.substr(0, results_prefix.rfind("/"))
-                        << "/comparison" << i << std::endl;
+                        << "/comparison" << i
+                        << results_prefix.substr(results_prefix.rfind("/"))
+                        << std::endl;
             }
           } else {
             std::cout << results_prefix << std::endl;
