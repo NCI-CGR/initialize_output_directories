@@ -37,3 +37,6 @@ config.h
 run_*
 tmp*
 doxygen_data*
+results
+tests
+test-*

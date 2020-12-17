@@ -64,6 +64,143 @@ class cargs {
   bool help() const { return compute_flag("help"); }
 
   /*!
+    \brief determine whether the run is in pretend mode
+    \return whether the run is in pretend mode
+
+    Pretend mode disables tracker file updating, and just emits analysis
+    prefixes for make dependency resolution. This is designed to be compatible
+    with `make -n`.
+   */
+  bool pretend() const { return compute_flag("pretend"); }
+
+  /*!
+    \brief determine whether the run is in force mode
+    \return whether the run is in force mode
+
+    Force mode overrides standard contextual updates to tracker files
+    and forces the updates regardless. Pretend mode takes precedence,
+    so `--force --pretend` will not change tracking files, but is considered
+    a valid run configuration for compatibility with `make -nB`.
+   */
+  bool force() const { return compute_flag("force"); }
+
+  /*!
+    \brief determine whether the run should be timed
+    \return whether the run should be timed
+
+    Almost all of this program is super fast, but one step, processing
+    the phenotype database, can be comparatively slow. to ease the
+    comparison of different implementations, this flag will turn on
+    an internal timer that will report the elapsed runtime.
+   */
+  bool timer() const { return compute_flag("timer"); }
+
+  /*!
+    \brief get the user-specified phenotype configuration file
+    \return the user-specified phenotype configuration file
+
+    This file should be in yaml format and specify each of the
+    phenotype run configuration options required for the analysis.
+    Yaml format is checked by yaml-cpp but any config file extension
+    is allowed.
+   */
+  std::string get_phenotype_config() const {
+    return compute_parameter<std::string>("phenotype-config");
+  }
+
+  /*!
+    \brief get the user-specified phenotype database filename
+    \return the user-specified phenotype database filename
+
+    The phenotype database is dynamically parsed out to determine
+    if changes in the phenotype database used for an association test
+    have any impact on the particular analysis being run. If the changes,
+    in the phenotype file do not impact any of the variables in the
+    model matrix, then the analysis trackers will not be updated
+    unless there are other changes to the configuration specification
+    that do impact the run output.
+   */
+  std::string get_phenotype_database() const {
+    return compute_parameter<std::string>("phenotype-database");
+  }
+
+  /*!
+    \brief get the user-specified name of the subject ID column
+    in the phenotype dataset
+    \return the user-specified name of the subject ID column
+    in the phenotype dataset
+
+    This is required in case there are sorting changes in the phenotype
+    database that do not actually impact the model matrix. For the PLCO
+    project, this value should be "plco_id".
+   */
+  std::string get_phenotype_id_colname() const {
+    return compute_parameter<std::string>("phenotype-id-colname");
+  }
+
+  /*!
+    \brief get the user-specified extension configuration file
+    \return the user-specified extension configuration file
+
+    This file should be in yaml format and specify each of the
+    file extensions used for config parameter tracking in the results
+    directories and downstream workflows. Yaml format is checked by
+    yaml-cpp but any config file extension is allowed.
+   */
+  std::string get_extension_config() const {
+    return compute_parameter<std::string>("extension-config");
+  }
+
+  /*!
+    \brief get the user-specified top level results directory
+    \return the user-specified top level results directory
+   */
+  std::string get_results_dir() const {
+    return compute_parameter<std::string>("results-dir");
+  }
+
+  /*!
+    \brief get the user-specified prefix to all bgen imputation files
+    \return the user-specified prefix to all bgen imputation files
+
+    This is expected to be the top level directory containing the bgen
+    pipeline from the plco-analysis project. Subdirectories in the
+    format "platform/ancestry" should contain bgen and sample files,
+    cleaned (NAs removed if using plink) and indexed.
+   */
+  std::string get_bgen_prefix() const {
+    return compute_parameter<std::string>("bgen-dir");
+  }
+
+  /*!
+    \brief get the user-specified software in use
+    \return the user-specified software in use
+
+    The preprocessing step of the analysis pipelines is where
+    the pipeline figures out if a config file is relevant to the pipeline
+    in use. So the user specifies "saige" for example, and then this
+    software determines whether "saige" is present in the corresponding
+    phenotype yaml.
+
+    Supported options: saige, boltlmm
+   */
+  std::string get_software() const {
+    return compute_parameter<std::string>("software");
+  }
+
+  /*!
+    \brief get minimum sample size for the requested software
+    \return the minimum sample size for the requested software
+
+    Each of the analysis tools supported by the pipeline has a different
+    heuristic minimum sample size requirement. This lets the user
+    specify that as needed.
+   */
+  unsigned get_software_min_sample_size() const {
+    return compute_parameter<unsigned>("software-min-sample-size");
+  }
+
+  /*!
     \brief find status of arbitrary flag
     @param tag name of flag
     \return whether the flag is set

@@ -4,6 +4,7 @@
 AC_PREREQ([2.69])
 AC_INIT(initialize_output_directories, 1.0, palmercd@nih.gov)
 AC_CONFIG_AUX_DIR([.])
+AC_REQUIRE_AUX_FILE([tap-driver.sh])
 AM_INIT_AUTOMAKE([-Wall -Werror subdir-objects])
 AM_SILENT_RULES([yes])
 AM_PROG_AR
@@ -27,6 +28,8 @@ AC_PROG_CXX_C_O
 # Checks for libraries.
 AX_BOOST_BASE([1.63.0])
 AX_BOOST_PROGRAM_OPTIONS
+AX_BOOST_FILESYSTEM
+AX_BOOST_IOSTREAMS
 # Checks for header files.
 
 # Checks for typedefs, structures, and compiler characteristics.
