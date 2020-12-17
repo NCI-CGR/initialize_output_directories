@@ -1,0 +1,39 @@
+phenotype-dataset: .phenotype_dataset
+phenotype: .phenotype_selected
+covariates: .covariates_selected
+categories: .categories
+finalization: .finalized
+general-extensions:
+  transformation:
+    suffix: .transform
+    default: none
+    options:
+      - none
+      - post.split.INT
+  sex-specific:
+    suffix: .sex-specific
+    default: combined
+    options:
+      - combined
+      - female
+      - male
+  control_inclusion:
+    suffix: .control-inclusion
+    default: NA
+  control_exclusion:
+    suffix: .control-exclusion
+    default: NA
+  frequency_mode:
+    suffix: .frequency_mode
+    default: reference
+    options:
+      - reference
+      - subject
+  id_mode:
+    suffix: .id_mode
+    default: chrpos
+    options:
+      - chrpos
+      - rsid
+
+    
