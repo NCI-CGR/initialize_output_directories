@@ -85,16 +85,6 @@ class cargs {
   bool force() const { return compute_flag("force"); }
 
   /*!
-    \brief determine whether the run is in debug mode
-    \return whether the run is in debug mode
-
-    Debug mode provides more diagnostic information about the run.
-    Since `make` is dumb and communicates exclusively with screen text,
-    this just hides dev content
-   */
-  bool debug() const { return compute_flag("debug"); }
-
-  /*!
     \brief determine whether the run should be timed
     \return whether the run should be timed
 

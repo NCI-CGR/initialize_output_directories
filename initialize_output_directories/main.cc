@@ -34,7 +34,6 @@ int main(int argc, char **argv) {
   unsigned software_min_sample_size = ap.get_software_min_sample_size();
   bool pretend = ap.pretend();
   bool force = ap.force();
-  bool debug = ap.debug();
   bool timer = ap.timer();
 
   std::chrono::time_point<std::chrono::high_resolution_clock> start_time,
@@ -68,7 +67,6 @@ int main(int argc, char **argv) {
     //    a single meta-group
     mm.load_data(phenotype_database);
     categories = mm.categorize(pheno_config.get_entry("phenotype"));
-    if (debug) mm.write("tmp.model_matrix");
   }
   // for each chip
   for (std::vector<std::string>::const_iterator chip = chips.begin();

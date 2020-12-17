@@ -9,7 +9,6 @@
 
 void initialize_output_directories::cargs::initialize_options() {
   _desc.add_options()("help,h", "emit this help message")(
-      "debug,d", "run in debug mode with more verbose output")(
       "extension-config,e", boost::program_options::value<std::string>(),
       "file extension configuration file, yaml format")(
       "force,B", "force updates to all tracking files unless in pretend mode")(
