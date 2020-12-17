@@ -19,13 +19,13 @@ This is a work in progress! The current list of dependencies is as follows:
 
  - gcc/g++ with `-std=c++17` support
  - `make` and associated tools; should be ok on most Linux systems
- - (boost)[www.boost.org], v1.63.0 or greater. within boost:
+ - [boost](www.boost.org), v1.63.0 or greater. within boost:
    - base headers, of course
    - `program_options`
    - `filesystem`
    - `system`
    - `iostreams`
- - (yaml-cpp)[https://github.com/jbeder/yaml-cpp]
+ - [yaml-cpp](https://github.com/jbeder/yaml-cpp)
  - if developing and changing build parameters, `autoconf`/`automake` 
 
 ## Installation
