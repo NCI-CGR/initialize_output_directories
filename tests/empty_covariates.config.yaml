@@ -1,0 +1,9 @@
+analysis_prefix: bq_bmi_curr_co
+chips:
+  - GSA_batch1
+phenotype: bq_bmi_curr_co
+ancestries:
+  - European
+algorithm:
+  - boltlmm
+id_mode: rsid
