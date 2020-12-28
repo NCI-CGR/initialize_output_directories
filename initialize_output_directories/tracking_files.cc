@@ -436,6 +436,7 @@ bool initialize_output_directories::tracking_files::check_files(
   extension_definition extension_covar;
   extension_covar.set_name("covariates");
   extension_covar.set_extension(get_covariates_suffix());
+  extension_covar.set_default("NA");
   res |= check_file(config, extension_covar, pretend, force, false);
   for (std::map<std::string, extension_definition>::const_iterator iter =
            _general_extensions.begin();

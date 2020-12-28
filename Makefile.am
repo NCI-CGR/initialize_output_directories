@@ -7,5 +7,5 @@ ACLOCAL_AMFLAGS = -I m4
 #check_PROGRAMS = tests/fixed.test
 TEST_LOG_DRIVER = env AM_TAP_AWK='$(AWK)' $(SHELL) \
                   $(top_srcdir)/tap-driver.sh
-TESTS = tests/fixed.test
+TESTS = tests/fixed.test tests/empty_covariates.test
 EXTRA_DIST = $(TESTS)
