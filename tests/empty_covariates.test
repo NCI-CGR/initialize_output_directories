@@ -1,0 +1,21 @@
+#!/bin/bash
+PROGRAM_NAME=./initialize_output_directories.out
+EXTENSION_CONFIG=./extensions.config.yaml
+PHENOTYPE_DATABASE=/CGF/GWAS/Scans/PLCO/builds/1/plco-analysis/phenotypes/v10/atlas_v10.with_na.augmented.02nov2020.tsv
+BGEN_DIR=/CGF/GWAS/Scans/PLCO/builds/1/plco-analysis/bgen
+EMPTY_COVAR_RESULTS=tests/empty_covariate_runs
+rm -Rf "$EMPTY_COVAR_RESULTS"
+"$PROGRAM_NAME" -e "$EXTENSION_CONFIG" -p tests/empty_covariates.config.yaml -D "$PHENOTYPE_DATABASE" -I plco_id -b "$BGEN_DIR" -r "$EMPTY_COVAR_RESULTS" -s boltlmm -N 1 > /dev/null
+target_prefix="$EMPTY_COVAR_RESULTS/bq_bmi_curr_co/European/BOLTLMM"
+target_file="bq_bmi_curr_co.GSA_batch1.boltlmm.covariates_selected"
+echo 1..1
+if [[ ! -f "$target_prefix/$target_file" ]] ; then
+    echo "not ok - $target_file tracker was not emitted"
+else
+    file_diff=`diff "tests/empty_covariate_examples/bq_bmi_curr_co/South_Asian/BOLTLMM/$target_file" "$target_prefix/$target_file" | wc -l`
+    if [[ "$file_diff" -ne "0" ]] ; then
+	echo "not ok - $target_file differs from expected $PROGRAM_NAME output"
+    else
+	echo "ok - $target_file"
+    fi
+fi
