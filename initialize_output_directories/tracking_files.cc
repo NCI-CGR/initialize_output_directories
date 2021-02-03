@@ -10,8 +10,15 @@
 void initialize_output_directories::model_matrix::load_data(
     const std::string &filename) {
   // https://stackoverflow.com/questions/17925051/fast-textfile-reading-in-c
-  boost::iostreams::mapped_file input(filename.c_str(),
-                                      boost::iostreams::mapped_file::readonly);
+  boost::iostreams::mapped_file input;
+  try {
+    input.open(filename.c_str(), boost::iostreams::mapped_file::readonly);
+  } catch (...) {
+    throw std::runtime_error(
+        "initialize_output_directories::model_matrix::load_data: "
+        "cannot open file \"" +
+        filename + "\"");
+  }
   const char *f = input.const_data(), *f_next = 0;
   const char *l = f + input.size();
   std::string line = "", catcher = "";
