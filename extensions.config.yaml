@@ -6,10 +6,10 @@ finalization: .finalized
 general-extensions:
   transformation:
     suffix: .transform
-    default: none
+    default: InverseNormal
     options:
       - none
-      - post.split.INT
+      - InverseNormal
   sex-specific:
     suffix: .sex-specific
     default: combined
