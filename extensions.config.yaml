@@ -23,6 +23,12 @@ general-extensions:
   control_exclusion:
     suffix: .control-exclusion
     default: NA
+  case_inclusion:
+    suffix: .case-inclusion
+    default: NA
+  case_exclusion:
+    suffix: .case-exclusion
+    default: NA  
   frequency_mode:
     suffix: .frequency_mode
     default: reference
